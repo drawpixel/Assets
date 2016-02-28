@@ -182,9 +182,9 @@ public class FightGrid
         Int2D orig;
         return CanBeReplace(crt, dest, out orig);
     }
-    public bool CanBeReplace(Creature crt, Int2D dest, out Int2D orig)
+    public bool CanBeReplace(Creature crt, Int2D dest, out Int2D dest_offset)
     {
-        orig = new Int2D(-1, -1);
+        dest_offset = new Int2D(-1, -1);
 
         // find all creature and calc bounder in area of dest
         Int2D dest_min = new Int2D(+int.MaxValue, +int.MaxValue);
@@ -210,53 +210,7 @@ public class FightGrid
                     dest_crts.Add(dest_u.Creature);
             }
         }
-
-        /*
-        for (int x = 0; x < crt.Proto.Dim.X; ++x)
-        {
-            for (int y = 0; y < crt.Proto.Dim.Y; ++y)
-            {
-                // check possible in curt orig
-                bool can_fit = true;
-                Int2D curt_orig = new Int2D(crt.Index.X + x, crt.Index.Y + y);
-                foreach (Creature dest_crt in dest_crts)
-                {
-                    for (int dx = 0; dx < dest_crt.Proto.Dim.X; ++dx)
-                    {
-                        for (int dy = 0; dy < dest_crt.Proto.Dim.Y; ++dy)
-                        {
-                            Int2D offset = new Int2D(dest_crt.Index.X - dest_min.X, dest_crt.Index.Y - dest_min.Y);
-                            Int2D check_pt = new Int2D(curt_orig.X + dx + offset.X, curt_orig.Y + dy + offset.Y);
-                            if (check_pt.X >= FightGrid.UnitCount.X || check_pt.Y >= FightGrid.UnitCount.Y)
-                            {
-                                can_fit = false;
-                                break;
-                            }
-                            FightGrid.Unit check = Units[check_pt.Y, check_pt.X];
-                            if (check.Creature == null || (check.Creature == crt && !will_occupied.Contains(check_pt)))
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                can_fit = false;
-                                break;
-                            }
-                        }
-                        if (!can_fit)
-                            break;
-                    }
-                    if (!can_fit)
-                        break;
-                }
-                if (can_fit)
-                {
-                    orig = curt_orig;
-                    return true;
-                }
-            }
-        }*/
-
+        
         List<Int2D> for_checks = new List<Int2D>();
         for_checks.Add(new Int2D(0, 0));
         for (int x = 0; x < crt.Proto.Dim.X; ++x)
@@ -313,43 +267,20 @@ public class FightGrid
             }
             if (can_fit)
             {
-                orig = i == 0 ? dest : dest_min;
+                dest_offset = (i == 0) ? dest - crt.Index : dest - ((crt.Index + for_checks[i]) + (dest - dest_min));
                 return true;
             }
         }
         return false;
-
-        /*
-        for (int x = 0; x < crt.Proto.Dim.X; ++x)
-        {
-            for (int y = 0; y < crt.Proto.Dim.Y; ++y)
-            {
-
-                Int2D src = new Int2D(crt.Index.X + x, crt.Index.Y + y);
-                FightGrid.Unit dest_u = Units[dest.Y, dest.X];
-                if (dest_u.Creature == null)
-                    continue;
-
-                for (int dx = 0; dx < dest_u.Creature.Proto.Dim.X; ++dx)
-                {
-                    for (int dy = 0; dy < dest_u.Creature.Proto.Dim.Y; ++dy)
-                    {
-                        FightGrid.Unit check = Units[dy + src.Y, dx + src.X];
-                        if (check.Creature == null || check.Creature == crt)
-                            continue;
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-        */
+        
     }
     public bool Replace(Creature crt, Int2D dest_pt)
     {
-        Int2D orig;
-        if (!CanBeReplace(crt, dest_pt, out orig))
+        Int2D dest_offset;
+        if (!CanBeReplace(crt, dest_pt, out dest_offset))
             return false;
+
+        Debug.Log(dest_offset.ToString());
 
         Int2D src_pt = crt.Index;
 
@@ -364,7 +295,7 @@ public class FightGrid
                     continue;
                 if (dics.ContainsKey(u.Creature))
                     continue;
-                dics[u.Creature] = u.Creature.Index - orig;
+                dics[u.Creature] = u.Creature.Index - dest_offset;
             }
         }
 
@@ -377,7 +308,7 @@ public class FightGrid
         EnterCreature(crt, dest_pt);
         foreach (KeyValuePair<Creature, Int2D> pair in dics)
         {
-            EnterCreature(pair.Key, src_pt + pair.Value);
+            EnterCreature(pair.Key, pair.Value);
         }
 
         return true;
