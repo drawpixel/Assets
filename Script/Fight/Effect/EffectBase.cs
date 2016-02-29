@@ -4,12 +4,29 @@ using System.Collections.Generic;
 
 public class EffectBase
 {
-    public delegate void DgtActive(EffectBase effect, Creature[] targets);
+    public delegate void DgtActive(EffectBase effect);
     public DgtActive OnActive;
 
-    public delegate bool DgtActivePrepare(EffectBase effect, Creature[] targets);
+    public delegate void DgtActivePrepare(EffectBase effect);
     public DgtActivePrepare OnActivePrepare;
-    
+
+    public delegate void DgtActiveOver(EffectBase effect);
+    public DgtActiveOver OnActiveOver;
+
+    public enum StateType
+    {
+        Idle,
+        Prepare,
+        Block,
+        Active,
+        Over,
+    }
+    StateType m_state = StateType.Idle;
+    public StateType State
+    {
+        get { return m_state; }
+    }
+
     ProtoEffect m_proto;
     public ProtoEffect Proto
     {
@@ -22,36 +39,63 @@ public class EffectBase
         get { return m_owner_skill; }
     }
 
-    public virtual void Create(ProtoEffect proto, Skill skill = null)
+    List<Creature> m_targets = null;
+    public List<Creature> CurtTargets
+    {
+        get { return m_targets; }
+    }
+
+    public virtual void Create(ProtoEffect proto, Skill skill)
 	{
         m_proto = proto;
         m_owner_skill = skill;
 	}
-    
-    public virtual void Active()
+
+    public virtual void Idle()
     {
-        Creature[] targets = FetchTargets();
+        m_state = StateType.Idle;
+    }
+
+    public virtual void Prepare()
+    {
+        m_state = StateType.Prepare;
+
+        m_targets = FetchTargets();
+
         if (OnActivePrepare != null)
         {
-            bool is_ready = OnActivePrepare(this, targets);
-            if (!is_ready)
-            {
-                return;
-            }
+            OnActivePrepare(this);
         }
-
-        DoActive(targets);
     }
 
-    public virtual void DoActive(Creature[] targets)
+    public virtual void Active()
     {
+        m_state = StateType.Active;
+
         if (OnActive != null)
         {
-            OnActive(this, targets);
+            OnActive(this);
         }
     }
 
-    public Creature[] FetchTargets()
+    public virtual void Over()
+    {
+        m_state = StateType.Over;
+
+        if (OnActiveOver != null)
+        {
+            OnActiveOver(this);
+        }
+    }
+
+    public virtual void Block()
+    {
+        m_state = StateType.Block;
+    }
+
+
+
+    public List<Creature> FetchTargets()
     {
         switch (Proto.TargetSelect)
         {
@@ -61,9 +105,9 @@ public class EffectBase
 
         return null;
     }
-    public Creature[] FetchTargetsFront()
+    public List<Creature> FetchTargetsFront()
     {
-        Creature[] targets = null;
+        List<Creature> targets = new List<Creature>();
 
         FightGrid grid = m_proto.TargetGridFace ? 
                             OwnerSkill.OwnerCreature.FGrid.Face : 
@@ -80,8 +124,7 @@ public class EffectBase
                     continue;
                 else
                 {
-                    targets = new Creature[1];
-                    targets[0] = u.Creature;
+                    targets.Add(u.Creature);
                     return targets;
                 }
             }
@@ -90,12 +133,4 @@ public class EffectBase
         return null;
     }
 
-    protected void Active(Creature[] targets)
-    {
-        if (OnActive != null)
-        {
-            OnActive(this, targets);
-        }
-    }
-    
 }

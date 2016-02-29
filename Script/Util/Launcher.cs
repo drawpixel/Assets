@@ -52,10 +52,7 @@ public class Launcher : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-        if (m_fc != null)
-        {
-            m_fc.Update(Time.deltaTime);
-        }
+        
         
 		/*
 		if (Network.peerType == NetworkPeerType.Disconnected) 
@@ -100,35 +97,34 @@ public class Launcher : MonoBehaviour
         string[] keys = null;
         Int2D[] pts = null;
 
-        keys = new string[] { "M01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01" };
-        pts = new Int2D[] { new Int2D(0, 0), new Int2D(2, 0), new Int2D(3, 0), new Int2D(4, 0), new Int2D(0, 1), new Int2D(1, 1), new Int2D(2, 1), new Int2D(3, 1), new Int2D(4, 1), new Int2D(0, 2), new Int2D(1, 2), new Int2D(2, 2), new Int2D(3, 2), new Int2D(4, 2)};
+        keys = new string[] { "Hadis", "Cretos", "Aflotiter", "Bosadon", "Bosadon", "Bosadon", "Bosadon", "Bosadon", "Bosadon" };
+        pts = new Int2D[] { new Int2D(0, 0), new Int2D(2, 0), new Int2D(0, 1), new Int2D(2, 1), new Int2D(3, 1), new Int2D(4, 1), new Int2D(2, 2), new Int2D(3, 2), new Int2D(4, 2)};
         for (int p = 0; p < keys.Length; ++ p)
         {
             string k = keys[p];
             InfoCreature info = new InfoCreature(ProtoMgr.Instance.GetByKey<ProtoCreature>(k));
-            
+            info.Skills = new InfoSkill[1];
+            info.Skills[0] = new InfoSkill(ProtoMgr.Instance.GetByKey<ProtoSkill>("Sk01"));
+
             Creature ac = new Creature();
             ac.Create(info);
             m_fc.FGrids[0].AddCreature(ac, pts[p]);
         }
 
-        keys = new string[] { "M01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01", "N01" };
-        pts = new Int2D[] { new Int2D(0, 0), new Int2D(2, 0), new Int2D(3, 0), new Int2D(4, 0), new Int2D(0, 1), new Int2D(1, 1), new Int2D(2, 1), new Int2D(3, 1), new Int2D(4, 1), new Int2D(0, 2), new Int2D(1, 2), new Int2D(2, 2), new Int2D(3, 2), new Int2D(4, 2) };
+        keys = new string[] { "Hadis", "Jos", "Bosadon", "Bosadon", "Bosadon", "Bosadon" };
+        pts = new Int2D[] { new Int2D(0, 0), new Int2D(2, 0), new Int2D(0, 1), new Int2D(1, 1), new Int2D(0, 2), new Int2D(1, 2) };
         for (int p = 0; p < keys.Length; ++p)
         {
             string k = keys[p];
             InfoCreature info = new InfoCreature(ProtoMgr.Instance.GetByKey<ProtoCreature>(k));
-            //info.Guns = new InfoGun[info.Proto.Guns.Length];
-            //for (int i = 0; i < info.Guns.Length; ++i)
-            //{
-            //    info.Guns[i] = new InfoGun(info.Proto.ProtoGuns[i]);
-            //}
+            info.Skills = new InfoSkill[1];
+            info.Skills[0] = new InfoSkill(ProtoMgr.Instance.GetByKey<ProtoSkill>("Sk01"));
 
             Creature ac = new Creature();
             ac.Create(info);
             m_fc.FGrids[1].AddCreature(ac, pts[p]);
         }
 
-        m_fc.Fight();
+        m_fc.Idle();
     }
 }

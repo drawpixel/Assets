@@ -13,7 +13,9 @@ public class InfoCreature : InfoBase
     public double Rank;
     public int Star;
     public int Quality;
-    
+
+    public InfoSkill[] Skills = null;
+
     public InfoCreature(ProtoBase proto) : base(proto)
     {
         m_proto_ac = (proto as ProtoCreature);

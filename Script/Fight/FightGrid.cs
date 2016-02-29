@@ -108,23 +108,26 @@ public class FightGrid
         }
     }
 
-    public void Fight()
+    public void Idle()
     {
         foreach (Creature crt in m_crts.Keys)
         {
-            crt.Fight();
+            crt.Idle();
         }
     }
 
     public bool CheckCreature(Creature crt, Int2D pt)
     {
-        for (int i = 0; i < crt.Info.Proto.Occupies.Length; ++i)
+        for (int y = 0; y < crt.Info.Proto.Dim.Y; ++y)
         {
-            int idx = crt.Info.Proto.Occupies[i];
-            int x = idx % crt.Info.Proto.Dim.X;
-            int y = idx / crt.Info.Proto.Dim.X;
-            if (x < 0 || y < 0 || x >= UnitCount.X || y >= UnitCount.Y)
-                return false;
+            for (int x = 0; x < crt.Info.Proto.Dim.X; ++x)
+            {
+                Int2D curt = pt + new Int2D(x, y);
+                if (curt.X < 0 || curt.Y < 0 || curt.X >= UnitCount.X || curt.Y >= UnitCount.Y)
+                    return false;
+                if (m_units[curt.Y, curt.X].Creature != null)
+                    return false;
+            }
         }
         return true;
     }
@@ -243,7 +246,7 @@ public class FightGrid
                             Int2D offset = new Int2D(dest_crt.Index.X - dest_min.X, dest_crt.Index.Y - dest_min.Y);
                             check_pt = new Int2D(curt_orig.X + dx + offset.X, curt_orig.Y + dy + offset.Y);
                         }
-                        if (check_pt.X >= FightGrid.UnitCount.X || check_pt.Y >= FightGrid.UnitCount.Y)
+                        if (check_pt.X < 0 || check_pt.Y < 0 || check_pt.X >= FightGrid.UnitCount.X || check_pt.Y >= FightGrid.UnitCount.Y)
                         {
                             can_fit = false;
                             break;

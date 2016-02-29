@@ -31,6 +31,8 @@ public class ProtoEffect : ProtoBase
     public bool TargetGridFace = true;
     public EffectTargetSelect TargetSelect = EffectTargetSelect.Front;
 
+    public string EffectViewOverride = "";
+
     public virtual EffectBase NewInstance()
     {
         return null;

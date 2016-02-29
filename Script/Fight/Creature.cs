@@ -7,9 +7,6 @@ public class Creature
     public delegate void DgtIdle();
     public DgtIdle OnIdle;
 
-    public delegate void DgtFight();
-    public DgtFight OnFight;
-
     public delegate void DgtCast(int idx);
     public DgtCast OnCast;
 
@@ -71,7 +68,6 @@ public class Creature
     public enum StateType
     {
         Idle,
-        Fighting,
         Death,
         Casting,
     }
@@ -97,8 +93,11 @@ public class Creature
     }
 
 
-
-
+    List<Skill> m_skills = new List<Skill>();
+    public List<Skill> Skills
+    {
+        get { return m_skills; }
+    }
 
     public void Create(InfoCreature info)
 	{
@@ -106,6 +105,13 @@ public class Creature
 
         m_max_hp = m_remain_hp = info.Proto.HP;
 
+        for (int i = 0; Info.Skills != null && i < Info.Skills.Length; ++ i)
+        {
+            Skill sk = new Skill();
+            sk.Create(Info.Skills[i], this);
+            m_skills.Add(sk);
+        }
+        
         Idle();
 	}
     
@@ -116,8 +122,6 @@ public class Creature
         switch (State)
         {
             case StateType.Idle:
-                break;
-            case StateType.Fighting:
                 break;
             case StateType.Death:
                 break;
@@ -158,22 +162,15 @@ public class Creature
         m_state = StateType.Idle;
         m_state_counter = 0;
     }
-    public void Fight()
-    {
-        m_state = StateType.Fighting;
-        m_state_counter = 0;
-
-        if (OnFight != null)
-        {
-            OnFight();
-        }
-    }
     public void Cast(int idx)
     {
+        if (idx >= m_skills.Count)
+            return;
+
         m_state = StateType.Casting;
         m_state_counter = 0;
 
-        
+        m_skills[idx].Cast();
 
         if (OnCast != null)
         {

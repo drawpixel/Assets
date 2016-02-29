@@ -44,10 +44,16 @@ public class FightCtllerView : MonoBehaviour
     
     void Update()
     {
-        
+        if (m_ctller.State == FightCtller.StateType.Idle)
+        {
+            m_ctller.Next();
+        }
     }
 
-    
 
+    public CreatureView GetCreatureView(Creature crt)
+    {
+        return m_fgv[(int)crt.FGrid.Dir].Creatures[crt];
+    }
     
 }

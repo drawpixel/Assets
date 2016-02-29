@@ -32,6 +32,10 @@ public class ProtoMgr
     {
         m_loader = loader;
 
+        LoadProto<ProtoEffectDamage, ProtoEffect>("Proto/EffectDamage");
+
+        LoadProto<ProtoSkill>("Proto/Skill");
+
         LoadProto<ProtoCreature>("Proto/Creature");
         
     }
@@ -59,7 +63,14 @@ public class ProtoMgr
 
         return rets;
     }
-    void LoadProto<T>(string path) where T : ProtoBase, new()
+    void LoadProto<T>(string path)
+        where T : ProtoBase, new()
+    {
+        LoadProto<T, T>(path);
+    }
+    void LoadProto<T, TB>(string path) 
+        where T : ProtoBase, new() 
+        where TB : ProtoBase
     {
         Member m = new Member();
 
@@ -87,7 +98,7 @@ public class ProtoMgr
             m.KeyMap[new_m.Key] = new_m;
         }
 
-        m_members.Add(typeof(T), m);
+        m_members.Add(typeof(TB), m);
     }
     object TryGetValue(Type t, string v)
     {

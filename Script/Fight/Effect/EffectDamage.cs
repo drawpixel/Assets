@@ -17,15 +17,15 @@ public class EffectDamage : EffectBase
         m_proto_damage = proto as ProtoEffectDamage;
 	}
 
-    public override void DoActive(Creature[] targets)
+    public override void Active()
     {
-        for (int i = 0; i < targets.Length; ++i)
+        for (int i = 0; i < CurtTargets.Count; ++i)
         {
-            Creature crt = targets[i];
+            Creature crt = CurtTargets[i];
             crt.TakeDamage(OwnerSkill.OwnerCreature, Proto.Damage);
         }
 
-        base.Active(targets);
+        base.Active();
     }
 
     

@@ -4,9 +4,10 @@ using System.Collections.Generic;
 
 public class Skill
 {
-    public delegate void DgtCast(Creature caster);
+    public delegate void DgtCast(Skill sk);
     public DgtCast OnCast;
-    
+    public delegate void DgtCastOver(Skill sk);
+    public DgtCastOver OnCastOver;
 
     InfoSkill m_info;
     public InfoSkill Info
@@ -47,7 +48,10 @@ public class Skill
         for (int i = 0; i < m_effects.Length; ++i)
         {
             ProtoEffect proto = Proto.ProtoEffects[i];
-            m_effects[i] = proto.NewInstance(); ;
+            EffectBase eb = proto.NewInstance(); 
+            eb.Create(proto, this);
+            eb.OnActiveOver += OnEffectActiveOver;
+            m_effects[i] = eb;
         }
 	}
     
@@ -55,13 +59,66 @@ public class Skill
     {
     }
 
-    public void Cast(Creature caster)
+    public void Cast()
     {
+        m_is_casting = true;
+
+        foreach (EffectBase eb in m_effects)
+        {
+            eb.Prepare();
+        }
+
+        foreach (EffectBase eb in m_effects)
+        {
+            if (eb.State != EffectBase.StateType.Block)
+            {
+                eb.Active();
+            }
+        }
+
+        foreach (EffectBase eb in m_effects)
+        {
+            if (eb.State != EffectBase.StateType.Block)
+            {
+                eb.Over();
+            }
+        }
+
         if (OnCast != null)
         {
-            OnCast(caster);
+            OnCast(this);
+        }
+    }
+    void CastOver()
+    {
+        m_is_casting = false;
+
+        foreach (EffectBase eb in m_effects)
+        {
+            eb.Idle();
+        }
+
+        if (OnCastOver != null)
+        {
+            OnCastOver(this);
         }
     }
 
+    void OnEffectActiveOver(EffectBase effect)
+    {
+        bool all_over = true;
+        foreach (EffectBase eb in m_effects)
+        {
+            if (eb.State != EffectBase.StateType.Over)
+            {
+                all_over = false;
+                break;
+            }
+        }
+        if (all_over)
+        {
+            CastOver();
+        }
+    }
     
 }

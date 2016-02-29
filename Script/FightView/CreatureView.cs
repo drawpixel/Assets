@@ -13,6 +13,11 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         get { return m_crt; }
     }
 
+    public ProtoCreature Proto
+    {
+        get { return m_crt.Proto; }
+    }
+
     public InfoCreature Info
     {
         get { return m_crt.Info; }
@@ -23,12 +28,23 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     {
         get { return m_fgv; }
     }
+    public FightCtllerView FCtrllerView
+    {
+        get { return m_fgv.FCtllerView; }
+    }
+     
 
     public Image ImgBG;
+    public Image ImgGlow;
+
     public Text TxtName;
 
     CreatureViewProg m_prog;
     RectTransform m_rt;
+
+    Animator m_anim_ctl;
+
+    List<SkillView> m_skill_views = new List<SkillView>();
 
     public void Create(Creature ac, FightGridView fgv)
 	{
@@ -41,19 +57,37 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         m_rt = gameObject.GetComponent<RectTransform>();
         m_rt.sizeDelta = new Vector2(Info.Proto.Dim.X * FightGrid.UnitSize, Info.Proto.Dim.Y * FightGrid.UnitSize);
 
-        //ImgBG.sprite = ResMgr.Instance.Load("Card/Common/BG_0") as Sprite;
+        m_anim_ctl = gameObject.GetComponent<Animator>();
+        //m_anim_ctl = gameObject.GetComponent<Animation>();
+        //m_anim_ctl.AddClip(ResMgr.Instance.Load("Anim/Die") as AnimationClip, "Die");
+        //m_anim_ctl.AddClip(ResMgr.Instance.Load("Anim/Cast") as AnimationClip, "Cast");
+        //m_anim_ctl.AddClip(ResMgr.Instance.Load("Anim/BeHit") as AnimationClip, "BeHit");
+
         TxtName.text = Info.Proto.Key;
         
         GameObject prog_hp = ResMgr.Instance.CreateGameObject("UI/CrtProg", gameObject);
         m_prog = prog_hp.GetComponent<CreatureViewProg>();
         m_prog.Create(this);
-        
+
+        for (int i = 0; i < Crt.Skills.Count; ++i)
+        {
+            SkillView sk = Util.NewGameObject("Skill", gameObject).AddComponent<SkillView>();
+            sk.Create(Crt.Skills[i], this);
+            m_skill_views.Add(sk);
+
+            Crt.Skills[i].OnCast += OnCast;
+        }
+
         Idle();
     }
     void OnDestroy()
     {
         m_crt.OnDead -= OnDead;
         m_crt.OnTakeDamage -= OnTakeDamage;
+        for (int i = 0; i < Crt.Skills.Count; ++i)
+        {
+            Crt.Skills[i].OnCast -= OnCast;
+        }
 
         GameObject.DestroyObject(m_prog);
     }
@@ -69,6 +103,10 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
     public void UpdateTransform(Int2D pt)
     {
+        if (Crt.FGrid.Dir == FightGrid.DirType.Up)
+        {
+            pt.Y += (Crt.Proto.Dim.Y - 1);
+        }
         Vector3 s = m_crt.FGrid.Units[pt.Y, pt.X].Position;
         s.x -= FightGrid.UnitSize * 0.5f;
         s.y += FightGrid.UnitSize * 0.5f;
@@ -78,20 +116,25 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
 
 
-    void Idle()
+    public void Idle()
     {
         
     }
+    public void OnCast(Skill sk)
+    {
+        m_anim_ctl.CrossFade("Cast", 0.05f);
+    }
     void OnTakeDamage(Creature killer, float damage)
     {
-        //m_anim_ctl.CrossFade("BeHit", 0.05f, PlayMode.StopSameLayer);
+        m_anim_ctl.CrossFade("BeHit", 0.05f);
     }
     void OnDead(Creature killer)
     {
-        //m_anim_ctl.CrossFade("Die", 0.2f);
+        m_anim_ctl.CrossFade("Die", 0.2f);
     }
 
 
+    
     
 
 
@@ -126,7 +169,7 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
             transform.parent as RectTransform,
             data.position, data.pressEventCamera, out in_world);
         Int2D pt = FGridView.GetGridsUnderPoint(Crt, in_world);
-        Debug.Log(pt.ToString());
+        
         if (FGridView.FGrid.CanBeReplace(Crt, pt))
         {
             FGridView.SetUnitColor(pt, Crt.Proto.Dim, Color.green);
@@ -143,7 +186,7 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
             transform.parent as RectTransform,
             data.position, data.pressEventCamera, out in_world);
         Int2D pt = FGridView.GetGridsUnderPoint(Crt, in_world);
-        Debug.Log(pt.ToString());
+        
         FGridView.FGrid.Replace(Crt, pt);
 
         foreach (CreatureView cv in FGridView.Creatures.Values)
