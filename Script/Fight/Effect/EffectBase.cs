@@ -94,13 +94,15 @@ public class EffectBase
     }
 
 
-
+    static int[] s_fetch_offset = new int[] { 0, 1, -1, 2, -2, 3, -3, 4, -4 };
     public List<Creature> FetchTargets()
     {
         switch (Proto.TargetSelect)
         {
             case EffectTargetSelect.Front:
                 return FetchTargetsFront();
+            case EffectTargetSelect.FrontH:
+                return FetchTargetsHorizontal(9);
         }
 
         return null;
@@ -113,15 +115,20 @@ public class EffectBase
                             OwnerSkill.OwnerCreature.FGrid.Face : 
                             OwnerSkill.OwnerCreature.FGrid;
 
-        for (int x = OwnerSkill.OwnerCreature.Index.X; x < FightGrid.UnitCount.X + OwnerSkill.OwnerCreature.Index.X; ++x)
+        int c = OwnerSkill.OwnerCreature.Index.X + (OwnerSkill.OwnerCreature.Proto.Dim.X - 1) / 2;
+        for (int i = 0; i < s_fetch_offset.Length; ++ i)
         {
-            int curt_x = x % FightGrid.UnitCount.X;
-
+            int curt_x = s_fetch_offset[i] + c;
+            if (curt_x < 0 || curt_x >= FightGrid.UnitCount.X)
+                continue;
+            
             for (int y = 0; y < FightGrid.UnitCount.Y; ++ y )
             {
                 FightGrid.Unit u = grid.Units[y, curt_x];
                 if (u.Creature == null || u.Creature.State == Creature.StateType.Death)
+                {
                     continue;
+                }
                 else
                 {
                     targets.Add(u.Creature);
@@ -133,4 +140,29 @@ public class EffectBase
         return null;
     }
 
+    public List<Creature> FetchTargetsHorizontal(int count)
+    {
+        List<Creature> targets = FetchTargetsFront();
+        if (targets == null)
+            return null;
+
+        Creature center = targets[0];
+
+        for (int i = 1; i < s_fetch_offset.Length; ++i)
+        {
+            int offset = s_fetch_offset[i];
+            if (center.Index.X + offset >= 0 && center.Index.X + offset < FightGrid.UnitCount.X)
+            {
+                Creature near = center.FGrid.Units[center.Index.Y, center.Index.X + offset].Creature;
+                if (near != null && !targets.Contains(near))
+                {
+                    targets.Add(near);
+                }
+            }
+            if (i >= count - 1)
+                break;
+        }
+        
+        return targets;
+    }
 }

@@ -6,11 +6,11 @@ public enum EffectTargetSelect
 {
     All,
     Front,
-    FrontVertical,
-    FrontHorizontal,
+    FrontV,
+    FrontH,
     Back,
-    BackVertical,
-    BackHorizontal,
+    BackV,
+    BackH,
 }
 
 public enum EffectExistType

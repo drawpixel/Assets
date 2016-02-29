@@ -103,8 +103,12 @@ public class Launcher : MonoBehaviour
         {
             string k = keys[p];
             InfoCreature info = new InfoCreature(ProtoMgr.Instance.GetByKey<ProtoCreature>(k));
-            info.Skills = new InfoSkill[1];
-            info.Skills[0] = new InfoSkill(ProtoMgr.Instance.GetByKey<ProtoSkill>("Sk01"));
+            info.Skills = new InfoSkill[info.Proto.Skills.Length];
+            for (int s = 0; s < info.Skills.Length; ++ s)
+            {
+                info.Skills[s] = new InfoSkill(ProtoMgr.Instance.GetByID<ProtoSkill>(info.Proto.Skills[s]));
+            }
+            
 
             Creature ac = new Creature();
             ac.Create(info);
@@ -117,8 +121,11 @@ public class Launcher : MonoBehaviour
         {
             string k = keys[p];
             InfoCreature info = new InfoCreature(ProtoMgr.Instance.GetByKey<ProtoCreature>(k));
-            info.Skills = new InfoSkill[1];
-            info.Skills[0] = new InfoSkill(ProtoMgr.Instance.GetByKey<ProtoSkill>("Sk01"));
+            info.Skills = new InfoSkill[info.Proto.Skills.Length];
+            for (int s = 0; s < info.Skills.Length; ++s)
+            {
+                info.Skills[s] = new InfoSkill(ProtoMgr.Instance.GetByID<ProtoSkill>(info.Proto.Skills[s]));
+            }
 
             Creature ac = new Creature();
             ac.Create(info);

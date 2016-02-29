@@ -118,19 +118,22 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     public void Idle()
     {
-        
+        //m_anim_ctl.CrossFade("Idle", 0.05f);
     }
     public void OnCast(Skill sk)
     {
         m_anim_ctl.CrossFade("Cast", 0.05f);
+        //m_anim_ctl.SetBool("Cast", true);
     }
     void OnTakeDamage(Creature killer, float damage)
     {
         m_anim_ctl.CrossFade("BeHit", 0.05f);
+        //m_anim_ctl.SetBool("BeHit", true);
     }
     void OnDead(Creature killer)
     {
-        m_anim_ctl.CrossFade("Die", 0.2f);
+        m_anim_ctl.CrossFade("Die", 0.05f);
+        //m_anim_ctl.SetBool("Die", true);
     }
 
 

@@ -1,3 +1,3 @@
-ID,Key,Damage,FxTarget
-101001,Atk01,100,FxHit01
-101002,Atk02,200,FxHit01
+ID,Key,TargetSelect,Damage,FxTarget
+101001,Atk01,Front,100,FxHit01
+101002,Atk02,FrontH,600,FxHit01

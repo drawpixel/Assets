@@ -159,6 +159,8 @@ public class Creature
 
     public void Idle()
     {
+        if (State == StateType.Death)
+            return;
         m_state = StateType.Idle;
         m_state_counter = 0;
     }

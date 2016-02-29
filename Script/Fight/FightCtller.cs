@@ -122,7 +122,7 @@ public class FightCtller
                 for (int x = 0; x < FightGrid.UnitCount.X; ++x)
                 {
                     Creature curt = m_fg[f].Units[y, x].Creature;
-                    if (curt != null && !crts[f].Contains(curt))
+                    if (curt != null && !crts[f].Contains(curt) && curt.State != Creature.StateType.Death)
                     {
                         crts[f].Add(curt);
                         ++toto;
