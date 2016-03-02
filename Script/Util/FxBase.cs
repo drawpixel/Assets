@@ -121,11 +121,11 @@ public class FxPool
 
 	public void Init()
 	{
-		m_fx_root = Util.NewGameObject ("FxRoot", Launcher.Instance.gameObject);
+		m_fx_root = Util.NewGameObject ("FxRoot", Launcher.Instance.CanvasUI.gameObject);
 	}
 	public FxBase Alloc(string key, GameObject parent = null)
 	{
-		if (!m_pool.ContainsKey (key)) 
+        if (!m_pool.ContainsKey (key)) 
 		{
 			m_pool[key] = new List<FxBase>();
 		}
@@ -143,22 +143,21 @@ public class FxPool
 
 		if (ret == null) 
 		{
-            FxBase new_m = ResMgr.Instance.CreateGameObject(key, null).GetComponent<FxBase>();
-			//GameObject prefab = Resources.Load ("Fx/" + key) as GameObject;
-			//FxBase new_m = GameObject.Instantiate (prefab).GetComponent<FxBase> ();
+            FxBase new_m = ResMgr.Instance.CreateGameObject("Fx/" + key, null).GetComponent<FxBase>();
 			new_m.Create ();
 			ret = new_m;
             m_pool[key].Add(new_m);
 		}
 
 		ret.ActiveInPool = true;
+
 		if (parent != null) 
 		{
-			ret.transform.parent = parent.transform;
+			ret.transform.SetParent(parent.transform);
 		} 
 		else 
 		{
-			ret.transform.parent = m_fx_root.transform;
+			ret.transform.SetParent(m_fx_root.transform);
 		}
 		ret.transform.localPosition = Vector3.zero;
 		ret.transform.localRotation = Quaternion.identity;
@@ -175,7 +174,21 @@ public class FxPool
         else
         {
 			fb.ActiveInPool = false;
-			fb.transform.parent = m_fx_root.transform;
+			fb.transform.SetParent(m_fx_root.transform);
 		}
 	}
+
+    public void Cache(string k, int count)
+    {
+        List<FxBase> fbs = new List<FxBase>();
+        for (int i = 0; i < count; ++i)
+        {
+            FxBase fb = Alloc(k, m_fx_root);
+            fbs.Add(fb);
+        }
+        for (int i = 0; i < count; ++i)
+        {
+            Free(fbs[i]);
+        }
+    }
 }

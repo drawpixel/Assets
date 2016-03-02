@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class SkillView : MonoBehaviour
 {
+    public string FxCaster;
+
     Skill m_skill;
     public Skill Skill
     {
@@ -34,11 +36,20 @@ public class SkillView : MonoBehaviour
         get { return m_effects; }
     }
 
+    public void Cache()
+    {
+        if (!string.IsNullOrEmpty(FxCaster))
+        {
+            FxPool.Instance.Cache(string.Format("Cast/{0}/{1}", FxCaster, FxCaster), 1);
+        }
+    }
 
     public void Create(Skill sk, CreatureView crt)
 	{
         m_skill = sk;
         m_owner = crt;
+
+        m_skill.OnCast += OnCast;
 
         m_effects = new EffectBaseView[sk.Effects.Length];
         for (int i = 0; i < m_effects.Length; ++i)
@@ -58,10 +69,20 @@ public class SkillView : MonoBehaviour
             m_effects[i] = obj_e.GetComponent<EffectBaseView>();
             m_effects[i].Create(eb, this);
         }
+
+        Cache();
 	}
     
     public void Update()
     {
     }
-
+    
+    public void OnCast(Skill sk)
+    {
+        if (!string.IsNullOrEmpty(FxCaster))
+        {
+            FxPool.Instance.Alloc(string.Format("Cast/{0}/{1}", FxCaster, FxCaster), Owner.gameObject);
+        }
+        
+    }
 }

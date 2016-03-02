@@ -12,6 +12,7 @@ public class EffectBaseView : MonoBehaviour
         Init,
         Prepare,
         Active,
+        Over,
     }
     StateType m_state = StateType.Init;
     public StateType State
@@ -20,6 +21,19 @@ public class EffectBaseView : MonoBehaviour
     }
     float m_state_counter = 0;
 
+
+    public enum ToTargetType
+    {
+        Once,
+        Sequent,
+        OneFirst,
+    }
+    
+    public ToTargetType ToTarget = ToTargetType.Once;
+    public float NextTargetTime = 0.5f;
+    int m_target_idx = 0;
+    float m_target_counter = 0;
+    
 
     EffectBase m_effect;
     public EffectBase Effect
@@ -50,11 +64,13 @@ public class EffectBaseView : MonoBehaviour
 
         Effect.OnActive += OnActive;
         Effect.OnActivePrepare += OnActivePrepare;
+        Effect.OnActiveOver += OnActiveOver;
 	}
     void OnDestroy()
     {
         Effect.OnActive -= OnActive;
         Effect.OnActivePrepare -= OnActivePrepare;
+        Effect.OnActiveOver -= OnActiveOver;
     }
     void Update()
     {
@@ -65,11 +81,42 @@ public class EffectBaseView : MonoBehaviour
             case StateType.Prepare:
                 if (m_state_counter >= PrepareTime)
                 {
-                    Effect.Active();
+                    switch (ToTarget)
+                    {
+                        case ToTargetType.Once:
+                            Effect.Active();
+                            m_target_idx = Effect.CurtTargets.Count;
+                            break;
+                        case ToTargetType.Sequent:
+                            ActiveInternal(Effect.CurtTargets[m_target_idx++]);
+                            break;
+                        case ToTargetType.OneFirst:
+                            ActiveInternal(Effect.CurtTargets[m_target_idx++]);
+                            break;
+                    }
+                    
                 }
                 break;
             case StateType.Active:
-                if (m_state_counter >= LastTime)
+                m_target_counter += Time.deltaTime;
+                if (m_target_counter >= NextTargetTime && m_target_idx < Effect.CurtTargets.Count)
+                {
+                    m_target_counter = 0;
+                    switch (ToTarget)
+                    {
+                        case ToTargetType.Sequent:
+                            ActiveInternal(Effect.CurtTargets[m_target_idx++]);
+                            break;
+                        case ToTargetType.OneFirst:
+                            for (int i = 1; i < Effect.CurtTargets.Count; ++i)
+                            {
+                                ActiveInternal(Effect.CurtTargets[m_target_idx++]);
+                            }
+                            break;
+                    }
+                }
+                
+                if (m_state_counter >= LastTime && m_target_idx >= Effect.CurtTargets.Count)
                 {
                     Effect.Over();
                 }
@@ -80,15 +127,27 @@ public class EffectBaseView : MonoBehaviour
     {
         m_state_counter = 0;
         m_state = StateType.Prepare;
+
+        m_target_idx = 0;
+        m_target_counter = 0;
     }
     public virtual void Active()
     {
         m_state_counter = 0;
         m_state = StateType.Active;
     }
+    public virtual void Over()
+    {
+        m_state_counter = 0;
+        m_state = StateType.Over;
+    }
 
 
-
+    protected virtual void ActiveInternal(Creature target)
+    {
+        Effect.Active(target);
+    }
+    
 
     public void OnActivePrepare(EffectBase effect)
     {
@@ -107,5 +166,9 @@ public class EffectBaseView : MonoBehaviour
         {
             effect.Block();
         }
+    }
+    public void OnActiveOver(EffectBase effect)
+    {
+        Over();
     }
 }

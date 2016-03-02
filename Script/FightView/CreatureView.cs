@@ -71,7 +71,7 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
         for (int i = 0; i < Crt.Skills.Count; ++i)
         {
-            SkillView sk = Util.NewGameObject("Skill", gameObject).AddComponent<SkillView>();
+            SkillView sk = ResMgr.Instance.CreateGameObject("Skill/" + Crt.Skills[i].Proto.Key, gameObject).GetComponent<SkillView>();
             sk.Create(Crt.Skills[i], this);
             m_skill_views.Add(sk);
 
@@ -82,13 +82,15 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
     void OnDestroy()
     {
-        m_crt.OnDead -= OnDead;
-        m_crt.OnTakeDamage -= OnTakeDamage;
-        for (int i = 0; i < Crt.Skills.Count; ++i)
+        if (Crt != null)
         {
-            Crt.Skills[i].OnCast -= OnCast;
+            m_crt.OnDead -= OnDead;
+            m_crt.OnTakeDamage -= OnTakeDamage;
+            for (int i = 0; i < Crt.Skills.Count; ++i)
+            {
+                Crt.Skills[i].OnCast -= OnCast;
+            }
         }
-
         GameObject.DestroyObject(m_prog);
     }
 

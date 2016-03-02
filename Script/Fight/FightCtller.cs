@@ -82,6 +82,12 @@ public class FightCtller
         {
             return;
         }
+        if (m_queue[0].Crt.State == Creature.StateType.Death)
+        {
+            m_queue.RemoveAt(0);
+            Next();
+            return;
+        }
         m_queue[0].Crt.Skills[0].OnCastOver += OnCastOver;
         m_queue[0].Crt.Cast(0);
         m_queue.RemoveAt(0);

@@ -70,11 +70,22 @@ public class EffectBase
 
     public virtual void Active()
     {
-        m_state = StateType.Active;
-
-        if (OnActive != null)
+        for (int i = 0; i < CurtTargets.Count; ++i)
         {
-            OnActive(this);
+            Creature crt = CurtTargets[i];
+            Active(crt);
+        }
+    }
+    public virtual void Active(Creature target)
+    {
+        if (State != StateType.Active)
+        {
+            m_state = StateType.Active;
+
+            if (OnActive != null)
+            {
+                OnActive(this);
+            }    
         }
     }
 
@@ -154,7 +165,7 @@ public class EffectBase
             if (center.Index.X + offset >= 0 && center.Index.X + offset < FightGrid.UnitCount.X)
             {
                 Creature near = center.FGrid.Units[center.Index.Y, center.Index.X + offset].Creature;
-                if (near != null && !targets.Contains(near))
+                if (near != null && !targets.Contains(near) && near.State != Creature.StateType.Death)
                 {
                     targets.Add(near);
                 }

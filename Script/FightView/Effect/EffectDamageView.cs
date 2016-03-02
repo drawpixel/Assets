@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class EffectDamageView : EffectBaseView
 {
+
+    public string FxFly;
     public string FxTarget;
     
     EffectDamage m_effect_damage;
@@ -22,22 +24,53 @@ public class EffectDamageView : EffectBaseView
     public override void Prepare()
     {
         base.Prepare();
-    }
-    public override void Active()
-    {
-        base.Active();
 
-        foreach (Creature crt in Effect.CurtTargets)
+        if (!string.IsNullOrEmpty(FxFly))
         {
-            CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(crt);
-
-            if (!string.IsNullOrEmpty(FxTarget))
+            switch (ToTarget)
             {
-                FxBase fb = FxPool.Instance.Alloc(FxTarget);
-                fb.transform.localPosition = cv.transform.localPosition;
+                case ToTargetType.Once:
+                    PrepareTime = 0;
+                    foreach (Creature crt in Effect.CurtTargets)
+                    {
+                        CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(crt);
+                        BulletView bv = CreateBullet(cv.transform.localPosition, FxFly);
+                        PrepareTime = Mathf.Max(PrepareTime, bv.FlyTime);
+                    }
+                    break;
+                case ToTargetType.Sequent:
+                    {
+                        CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(Effect.CurtTargets[0]);
+                        CreateBullet(cv.transform.localPosition, FxFly);
+                    }
+                    break;
+                case ToTargetType.OneFirst:
+                    {
+                        CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(Effect.CurtTargets[0]);
+                        CreateBullet(cv.transform.localPosition, FxFly);
+                    }
+                    break;
             }
         }
     }
+    protected override void ActiveInternal(Creature target)
+    {
+        base.ActiveInternal(target);
 
-    
+        CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(target);
+
+        if (!string.IsNullOrEmpty(FxTarget))
+        {
+            FxBase fb = FxPool.Instance.Alloc(FxTarget);
+            fb.transform.localPosition = cv.transform.localPosition;
+        }    
+    }
+
+    BulletView CreateBullet(Vector3 target_pos, string fx)
+    {
+        FxBase fb = FxPool.Instance.Alloc(string.Format("Bullet/{0}/{1}", fx, fx));
+        BulletView bv = fb.gameObject.GetComponent<BulletView>();
+        bv.Active(Owner.Owner.transform.localPosition, target_pos);
+        return bv;
+    }
 }
