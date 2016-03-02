@@ -46,9 +46,10 @@ public class BulletView : MonoBehaviour
         m_time_counter += Time.deltaTime;
 
 
-        Vector3 curt = Vector3.Lerp(m_start, m_end, Mathf.Clamp01(m_time_counter / m_fly_time)); //CalcPos(m_time_counter);
+        //Vector3 curt = Vector3.Lerp(m_start, m_end, Mathf.Clamp01(m_time_counter / m_fly_time)); //CalcPos(m_time_counter);
+        Vector3 curt = CalcPos(m_time_counter);
 
-        //UpdateRotation(curt);
+        UpdateRotation(curt);
 
         transform.localPosition = curt;
 
@@ -65,9 +66,9 @@ public class BulletView : MonoBehaviour
         float rot_z = Vector3.Angle(dir, Vector3.up);
         if (dir.x < 0)
         {
-            rot_z += 360;
+            rot_z = 360 - rot_z;
         }
-        transform.localRotation = Quaternion.Euler(0, 0, rot_z);
+        transform.localRotation = Quaternion.Euler(0, 0, -rot_z);
     }
     Vector3 CalcPos(float time)
     {
@@ -75,18 +76,19 @@ public class BulletView : MonoBehaviour
         float side = CurveFlySide.Evaluate(rate);
         float forward = CurveFlyForward.Evaluate(rate);
 
-        Vector3 curt = m_start + Vector3.up * forward * (m_end - m_start).magnitude;
+        Vector3 curt = Vector3.up * forward * (m_end - m_start).magnitude;
         curt.x += side;
 
         Vector3 dir = (m_end - m_start).normalized;
-        float rot_z = Vector3.Angle(dir, Vector3.up);
+        float rot_z = Vector3.Angle(Vector3.up, dir);
         if (dir.x < 0)
         {
-            rot_z += 360;
+            rot_z = 360 - rot_z;
         }
-        Quaternion quat_dir = Quaternion.Euler(0, 0, rot_z);
+        Quaternion quat_dir = Quaternion.Euler(0, 0, -rot_z);
 
-        curt = quat_dir * curt;
+        curt =  quat_dir * curt;
+        curt = m_start + curt;
 
         return curt;
     }

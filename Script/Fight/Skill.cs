@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class Skill
 {
+    public delegate void DgtCastPrepare(Skill sk);
+    public DgtCastPrepare OnCastPrepare;
     public delegate void DgtCast(Skill sk);
     public DgtCast OnCast;
     public delegate void DgtCastOver(Skill sk);
@@ -30,6 +32,15 @@ public class Skill
     public bool IsCasting
     {
         get { return m_is_casting; }
+    }
+    bool m_is_block = false;
+    public bool IsBlock
+    {
+        get { return m_is_block; }
+        set
+        {
+            m_is_block = value;
+        }
     }
 
     EffectBase[] m_effects = null;
@@ -61,11 +72,24 @@ public class Skill
 
     public void Cast()
     {
+        if (OnCastPrepare != null)
+        {
+            OnCastPrepare(this);
+        }
+
+        if (IsBlock)
+        {
+            return;
+        }
+
         m_is_casting = true;
 
         foreach (EffectBase eb in m_effects)
         {
-            eb.Prepare();
+            if (eb.State != EffectBase.StateType.Block)
+            {
+                eb.Prepare();
+            }
         }
 
         foreach (EffectBase eb in m_effects)
