@@ -7,6 +7,15 @@ public class EffectBaseView : MonoBehaviour
     public float PrepareTime = 1;
     public float LastTime = 1;
 
+    /*
+    public enum CastPositionType
+    {
+        CasterCenter,
+        AlignTarget,
+    }
+    public CastPositionType CastPosition = CastPositionType.CasterCenter;
+    */
+
     public enum StateType
     {
         Init,
@@ -27,6 +36,7 @@ public class EffectBaseView : MonoBehaviour
         Once,
         Sequent,
         OneFirst,
+        Penetrate,
     }
     
     public ToTargetType ToTarget = ToTargetType.Once;

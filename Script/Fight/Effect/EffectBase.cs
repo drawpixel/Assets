@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 
 public class EffectBase
@@ -113,7 +114,9 @@ public class EffectBase
             case EffectTargetSelect.Front:
                 return FetchTargetsFront();
             case EffectTargetSelect.FrontH:
-                return FetchTargetsHorizontal(9);
+                return FetchTargetsH(9);
+            case EffectTargetSelect.FrontV:
+                return FetchTargetsV(9);
         }
 
         return null;
@@ -127,13 +130,35 @@ public class EffectBase
                             OwnerSkill.OwnerCreature.FGrid;
 
         int c = OwnerSkill.OwnerCreature.Index.X + (OwnerSkill.OwnerCreature.Proto.Dim.X - 1) / 2;
-        for (int i = 0; i < s_fetch_offset.Length; ++ i)
+        for (int y = 0; y < FightGrid.UnitCount.Y; ++y)
+        {
+            for (int i = 0; i < s_fetch_offset.Length; ++i)
+            {
+                int curt_x = s_fetch_offset[i] + c;
+                if (curt_x < OwnerSkill.OwnerCreature.Index.X || curt_x >= OwnerSkill.OwnerCreature.Index.X + OwnerSkill.OwnerCreature.Proto.Dim.X)
+                {
+                    break;
+                }
+                
+                FightGrid.Unit u = grid.Units[y, curt_x];
+                if (u.Creature == null || u.Creature.State == Creature.StateType.Death)
+                {
+                    continue;
+                }
+                else
+                {
+                    targets.Add(u.Creature);
+                    return targets;
+                }
+            }
+        }
+        for (int i = 0; i < s_fetch_offset.Length; ++i)
         {
             int curt_x = s_fetch_offset[i] + c;
             if (curt_x < 0 || curt_x >= FightGrid.UnitCount.X)
                 continue;
-            
-            for (int y = 0; y < FightGrid.UnitCount.Y; ++ y )
+
+            for (int y = 0; y < FightGrid.UnitCount.Y; ++y)
             {
                 FightGrid.Unit u = grid.Units[y, curt_x];
                 if (u.Creature == null || u.Creature.State == Creature.StateType.Death)
@@ -147,11 +172,10 @@ public class EffectBase
                 }
             }
         }
-        
         return null;
     }
 
-    public List<Creature> FetchTargetsHorizontal(int count)
+    public List<Creature> FetchTargetsH(int count)
     {
         List<Creature> targets = FetchTargetsFront();
         if (targets == null)
@@ -174,6 +198,26 @@ public class EffectBase
                 break;
         }
         
+        return targets;
+    }
+
+    public List<Creature> FetchTargetsV(int count)
+    {
+        List<Creature> targets = FetchTargetsFront();
+        if (targets == null)
+            return null;
+
+        Creature center = targets[0];
+
+        for (int i = center.Index.Y; i < FightGrid.UnitCount.Y; ++i)
+        {
+            Creature near = center.FGrid.Units[i, center.CenterIndex.X].Creature;
+            if (near != null && !targets.Contains(near) && near.State != Creature.StateType.Death)
+            {
+                targets.Add(near);
+            }
+        }
+
         return targets;
     }
 }

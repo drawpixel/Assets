@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 
 public class Creature
@@ -50,6 +51,29 @@ public class Creature
         set
         {
             m_idx = value;
+        }
+    }
+    public Int2D CenterIndex
+    {
+        get
+        { return Index + new Int2D((Proto.Dim.X - 1) / 2, (Proto.Dim.Y - 1) / 2); }
+    }
+    public Vector3 Center
+    {
+        get
+        {
+            Vector3 v = FGrid.Units[Index.Y, Index.X].Position;
+            v += new Vector3(((Proto.Dim.X - 1) / 2.0f) * FightGrid.UnitSize, ((Proto.Dim.Y - 1) / 2.0f) * FightGrid.UnitSize, 0);
+            return v;
+        }
+    }
+    public Vector3 CenterAlign
+    {
+        get
+        {
+            Vector3 v = FGrid.Units[Index.Y, Index.X].Position;
+            v += new Vector3(((Proto.Dim.X - 1) / 2) * FightGrid.UnitSize, ((Proto.Dim.Y - 1) / 2) * FightGrid.UnitSize, 0);
+            return v;
         }
     }
 
@@ -137,12 +161,15 @@ public class Creature
         if (m_remain_hp <= 0)
         {
             m_remain_hp = 0;
-            Dead(killer);
         }
-
         if (OnTakeDamage != null)
         {
             OnTakeDamage(killer, damage);
+        }
+
+        if (m_remain_hp <= 0)
+        {
+            Dead(killer);
         }
     }
     public void TakeMentality(Creature caster, MentalityType mt)

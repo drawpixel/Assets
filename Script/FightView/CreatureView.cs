@@ -34,6 +34,8 @@ public class CreatureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
      
 
+    
+
     public Image ImgBG;
     public Image ImgGlow;
 

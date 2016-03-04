@@ -115,8 +115,8 @@ public class Launcher : MonoBehaviour
             m_fc.FGrids[0].AddCreature(ac, pts[p]);
         }
 
-        keys = new string[] { "Hadis", "Jos", "Bosadon", "Bosadon", "Bosadon", "Bosadon" };
-        pts = new Int2D[] { new Int2D(0, 0), new Int2D(2, 0), new Int2D(0, 1), new Int2D(1, 1), new Int2D(0, 2), new Int2D(1, 2) };
+        keys = new string[] { "Hadis", "Kerboros", "Aflotiter", "Bosadon", "Bosadon", "Bosadon", "Bosadon", "Cretos" };
+        pts = new Int2D[] { new Int2D(0, 0), new Int2D(2, 0), new Int2D(3, 0), new Int2D(0, 1), new Int2D(1, 1), new Int2D(0, 2), new Int2D(1, 2), new Int2D(2, 2) };
         for (int p = 0; p < keys.Length; ++p)
         {
             string k = keys[p];

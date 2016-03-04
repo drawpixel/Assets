@@ -8,6 +8,8 @@ public class SkillView : MonoBehaviour
     public string FxCaster;
     public float PrepareTime = 0;
 
+    
+
     public enum StateType
     {
         Init,
