@@ -31,9 +31,9 @@ public class Launcher : MonoBehaviour
 
         ResMgr.CreateInstance ();
 		ResMgr.Instance.Init ();
-        
-		FxPool.CreasteInstance ();
-		FxPool.Instance.Init ();
+
+        gameObject.AddComponent<FxPool>();
+        FxPool.Instance.Init();
 
         ProtoMgr.CreasteInstance();
         ProtoMgr.Instance.Init((string path) =>
@@ -41,6 +41,9 @@ public class Launcher : MonoBehaviour
                 TextAsset ta = ResMgr.Instance.Load(path) as TextAsset;
                 return ta.text;
             });
+
+        BulletViewPool.CreasteInstance();
+        BulletViewPool.Instance.Init();
 
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
@@ -97,7 +100,7 @@ public class Launcher : MonoBehaviour
         string[] keys = null;
         Int2D[] pts = null;
 
-        keys = new string[] { "Hadis", "Cretos", "Aflotiter", "Bosadon", "Bosadon", "Bosadon", "Bosadon", "Bosadon", "Bosadon" };
+        keys = new string[] { "Hadis", "Cretos", "Aflotiter", "Bosadon", "Giant", "Bosadon", "Bosadon", "Bosadon", "Bosadon" };
         pts = new Int2D[] { new Int2D(0, 0), new Int2D(2, 0), new Int2D(0, 1), new Int2D(2, 1), new Int2D(3, 1), new Int2D(4, 1), new Int2D(2, 2), new Int2D(3, 2), new Int2D(4, 2)};
         for (int p = 0; p < keys.Length; ++ p)
         {
@@ -115,7 +118,7 @@ public class Launcher : MonoBehaviour
             m_fc.FGrids[0].AddCreature(ac, pts[p]);
         }
 
-        keys = new string[] { "Hadis", "Kerboros", "Aflotiter", "Bosadon", "Bosadon", "Bosadon", "Bosadon", "Cretos" };
+        keys = new string[] { "Hadis", "Kerboros", "Aflotiter", "Bosadon", "Giant", "Bosadon", "Bosadon", "Cretos" };
         pts = new Int2D[] { new Int2D(0, 0), new Int2D(2, 0), new Int2D(3, 0), new Int2D(0, 1), new Int2D(1, 1), new Int2D(0, 2), new Int2D(1, 2), new Int2D(2, 2) };
         for (int p = 0; p < keys.Length; ++p)
         {

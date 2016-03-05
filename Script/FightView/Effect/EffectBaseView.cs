@@ -163,7 +163,7 @@ public class EffectBaseView : MonoBehaviour
     {
         Prepare();
 
-        if (PrepareTime > 0)
+        //if (PrepareTime > 0)
         {
             effect.Block();
         }
@@ -172,7 +172,7 @@ public class EffectBaseView : MonoBehaviour
     {
         Active();
 
-        if (LastTime > 0)
+        //if (LastTime > 0)
         {
             effect.Block();
         }

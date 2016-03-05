@@ -13,12 +13,23 @@ public class BulletView : MonoBehaviour
     
     public float Speed = 100;
 
+    public enum AlignType
+    {
+        Center,
+        Grid,
+        FirstCenterX,
+        FirstCenterY,
+        FitstGridX,
+        FitstGridY,
+    }
+    public AlignType Align = AlignType.Center;
+
     public enum FlyModeType
     {
-        Jump,
-        CenterAlign,
+        Linear,
+        Laser,
     }
-    public FlyModeType FlyMode = FlyModeType.Jump;
+    public FlyModeType FlyMode = FlyModeType.Linear; 
 
     float m_fly_time = 0;
     public float FlyTime
@@ -31,12 +42,17 @@ public class BulletView : MonoBehaviour
         get { return m_curt_fly_time; }
     }
 
+    public string FxFly;
+    
+
     float m_time_counter = 0;
     float m_totol_time_counter = 0;
 
     Vector3 m_start;
     Vector3[] m_end;
     int m_end_index = 0;
+
+    FxBase m_fb = null;
 
     public Vector3 CurtEnd
     {
@@ -54,21 +70,34 @@ public class BulletView : MonoBehaviour
     }
     
 
-    bool m_is_actived = false;
+    bool m_active_in_pool = true;
+    public bool ActiveInPool
+    {
+        get { return m_active_in_pool; }
+    }
 
+
+    public void Create()
+    {
+        
+    }
     public void Active(Vector3 s, Creature target)
     {
         Active(s, new Creature[1] { target });
     }
     public void Active(Vector3 s, Creature[] targets)
     {
+        m_active_in_pool = true;
+        gameObject.SetActive(true);
+        
         m_start = s;
         m_end = GetTargetPos(targets);
         m_end_index = 0;
         
         m_time_counter = 0;
         m_totol_time_counter = 0;
-        m_is_actived = true;
+        
+        
 
         m_fly_time = 0;
         Vector3 prev = s;
@@ -80,31 +109,60 @@ public class BulletView : MonoBehaviour
         m_curt_fly_time = Vector3.Distance(s, m_end[0]) / Speed;
 
         transform.localPosition = s;
-
-        Vector3 curt = CalcPos(0.02f);
-        UpdateRotation(curt);
+        
+        if (FlyMode == FlyModeType.Laser)
+        {
+            UpdateRotation(CurtEnd);
+            if (!string.IsNullOrEmpty(FxFly))
+            {
+                m_fb = FxPool.Instance.Alloc(FxFly, null);
+                m_fb.transform.localPosition = transform.localPosition;
+                m_fb.transform.localRotation = transform.localRotation;
+                m_fb.ScaleBody(Vector3.Distance(CurtStart, CurtEnd));
+            }
+            
+        }
+        else if (FlyMode == FlyModeType.Linear)
+        {
+            Vector3 curt = CalcPos(0.02f);
+            UpdateRotation(curt);
+            if (!string.IsNullOrEmpty(FxFly))
+            {
+                m_fb = FxPool.Instance.Alloc(FxFly, gameObject);
+            }
+            
+        }
 
         OnReachTarget = null;
+    }
+    public void Inactive()
+    {
+        if (m_fb != null)
+        {
+            FxPool.Instance.Free(m_fb);
+            m_fb = null;
+        }
+        m_active_in_pool = false;
+        gameObject.SetActive(false);
     }
 
     public void Update()
     {
-        if (!m_is_actived)
-            return;
-
         m_time_counter += Time.deltaTime;
         m_totol_time_counter += Time.deltaTime;
 
-        Vector3 curt = CalcPos(m_time_counter);
-
-        UpdateRotation(curt);
-
-        transform.localPosition = curt;
+        
+        if (FlyMode == FlyModeType.Linear)
+        {
+            Vector3 curt = CalcPos(m_time_counter);
+            UpdateRotation(curt);
+            transform.localPosition = curt;
+        }
 
         if (m_totol_time_counter >= FlyTime)
         {
-            m_is_actived = false;
-            FxPool.Instance.Free(gameObject.GetComponent<FxBase>());
+            m_active_in_pool = false;
+            BulletViewPool.Instance.Free(this);
         }
         else if (m_time_counter >= m_curt_fly_time)
         {
@@ -112,12 +170,33 @@ public class BulletView : MonoBehaviour
             m_time_counter = 0;
             m_curt_fly_time = Vector3.Distance(m_end[m_end_index], m_end[m_end_index - 1]) / Speed;
 
+            if (FlyMode == FlyModeType.Laser)
+            {
+                transform.localPosition = CurtStart;
+                UpdateRotation(CurtEnd);
+
+                if (m_fb != null)
+                {
+                    FxPool.Instance.Free(m_fb);
+                    m_fb = null;
+                }
+                if (!string.IsNullOrEmpty(FxFly))
+                {
+                    m_fb = FxPool.Instance.Alloc(FxFly, null);
+                    m_fb.transform.localPosition = CurtStart;
+                    m_fb.transform.localRotation = transform.localRotation;
+                    m_fb.ScaleBody(Vector3.Distance(CurtStart, CurtEnd));
+                }
+            }
+
             if (OnReachTarget != null)
             {
                 OnReachTarget(this, m_end_index);
             }
         }
     }
+
+
 
     void UpdateRotation(Vector3 to_pos)
     {
@@ -131,46 +210,145 @@ public class BulletView : MonoBehaviour
     }
     Vector3 CalcPos(float time)
     {
-        float rate = Mathf.Clamp01(time / m_curt_fly_time);
-        float side = CurveFlySide.Evaluate(rate);
-        float forward = CurveFlyForward.Evaluate(rate);
-
-        Vector3 curt = Vector3.up * forward * (CurtEnd - CurtStart).magnitude;
-        curt.x += side;
-
-        Vector3 dir = (CurtEnd - CurtStart).normalized;
-        float rot_z = Vector3.Angle(Vector3.up, dir);
-        if (dir.x < 0)
+        if (FlyMode == FlyModeType.Linear)
         {
-            rot_z = 360 - rot_z;
+            float rate = Mathf.Clamp01(time / m_curt_fly_time);
+            float side = CurveFlySide.Evaluate(rate);
+            float forward = CurveFlyForward.Evaluate(rate);
+
+            Vector3 curt = Vector3.up * forward * (CurtEnd - CurtStart).magnitude;
+            curt.x += side;
+
+            Vector3 dir = (CurtEnd - CurtStart).normalized;
+            float rot_z = Vector3.Angle(Vector3.up, dir);
+            if (dir.x < 0)
+            {
+                rot_z = 360 - rot_z;
+            }
+            Quaternion quat_dir = Quaternion.Euler(0, 0, -rot_z);
+
+            curt = quat_dir * curt;
+            curt = CurtStart + curt;
+
+            return curt;
         }
-        Quaternion quat_dir = Quaternion.Euler(0, 0, -rot_z);
-
-        curt =  quat_dir * curt;
-        curt = CurtStart + curt;
-
-        return curt;
+        else
+        {
+            return CurtStart;
+        }
     }
 
 
     Vector3[] GetTargetPos(Creature[] crts)
     {
         Vector3[] rets = new Vector3[crts.Length];
-        switch (FlyMode)
+        switch (Align)
         {
-            case FlyModeType.Jump:
+            case AlignType.Center:
                 for (int i = 0; i < crts.Length; ++ i)
                 {
                     rets[i] = crts[i].Center;
                 }
                 break;
-            case FlyModeType.CenterAlign:
+            case AlignType.Grid:
                 for (int i = 0; i < crts.Length; ++i)
                 {
                     rets[i] = crts[i].CenterAlign;
                 }
                 break;
+            case AlignType.FirstCenterX:
+                for (int i = 0; i < crts.Length; ++i)
+                {
+                    rets[i] = crts[i].Center;
+                    rets[i].x = crts[0].Center.x;
+                }
+                break;
+            case AlignType.FitstGridX:
+                for (int i = 0; i < crts.Length; ++i)
+                {
+                    rets[i] = crts[i].CenterAlign;
+                    rets[i].x = crts[0].CenterAlign.x;
+                }
+                break;
         }
         return rets;
+    }
+}
+
+
+
+
+
+
+public class BulletViewPool
+{
+    public static BulletViewPool Instance;
+    public static void CreasteInstance()
+    {
+        Instance = new BulletViewPool();
+    }
+    public static void DestroyInstance()
+    {
+        Instance = null;
+    }
+
+    GameObject m_bullet_root;
+
+    Dictionary<string, List<BulletView>> m_pool = new Dictionary<string, List<BulletView>>();
+
+    public void Init()
+    {
+        m_bullet_root = Util.NewGameObject("BulletRoot", Launcher.Instance.CanvasUI.gameObject);
+    }
+    public BulletView Alloc(string key, Vector3 start, Creature[] targets)
+    {
+        if (!m_pool.ContainsKey(key))
+        {
+            m_pool[key] = new List<BulletView>();
+        }
+
+        BulletView ret = null;
+
+        foreach (BulletView m in m_pool[key])
+        {
+            if (!m.ActiveInPool)
+            {
+                ret = m;
+                break;
+            }
+        }
+
+        if (ret == null)
+        {
+            BulletView new_m = ResMgr.Instance.CreateGameObject(string.Format("Bullet/{0}/{1}", key, key), m_bullet_root).GetComponent<BulletView>();
+            new_m.Create();
+            ret = new_m;
+            m_pool[key].Add(new_m);
+        }
+
+        if (targets != null)
+        {
+            ret.Active(start, targets);
+        }
+                
+        return ret;
+    }
+    public void Free(BulletView bv)
+    {
+        bv.Inactive();
+    }
+
+    public void Cache(string k, int count)
+    {
+        List<BulletView> bvs = new List<BulletView>();
+        for (int i = 0; i < count; ++i)
+        {
+            BulletView bv = Alloc(k, Vector3.zero, null);
+            bvs.Add(bv);
+        }
+        for (int i = 0; i < count; ++i)
+        {
+            Free(bvs[i]);
+        }
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EffectDamageView : EffectBaseView
 {
-    public string FxFly;
+    public string Bullet;
     public string FxTarget;
     
     EffectDamage m_effect_damage;
@@ -24,40 +24,9 @@ public class EffectDamageView : EffectBaseView
     {
         base.Prepare();
 
-        if (!string.IsNullOrEmpty(FxFly))
+        if (!string.IsNullOrEmpty(Bullet))
         {
-            switch (ToTarget)
-            {
-                case ToTargetType.Once:
-                    PrepareTime = 0;
-                    foreach (Creature crt in Effect.CurtTargets)
-                    {
-                        CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(crt);
-                        BulletView bv = CreateBullet(crt, FxFly);
-                        PrepareTime = Mathf.Max(PrepareTime, bv.FlyTime);
-                    }
-                    break;
-                case ToTargetType.Sequent:
-                    {
-                        Vector3[] targets = new Vector3[Effect.CurtTargets.Count];
-                        for (int i = 0; i < Effect.CurtTargets.Count; ++ i)
-                        {
-                            Creature crt = Effect.CurtTargets[i];
-                            CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(crt);
-                            targets[i] = cv.transform.localPosition;
-                        }
-                        BulletView bv = CreateBullet(Effect.CurtTargets.ToArray(), FxFly);
-                        PrepareTime = bv.CurtFlyTime;
-                        bv.OnReachTarget = (blt, idx) => { NextTargetTime = blt.CurtFlyTime; };
-                    }
-                    break;
-                case ToTargetType.OneFirst:
-                    {
-                        CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(Effect.CurtTargets[0]);
-                        CreateBullet(Effect.CurtTargets[0], FxFly);
-                    }
-                    break;
-            }
+            CreateBullet();
         }
     }
     protected override void ActiveInternal(Creature target)
@@ -68,20 +37,46 @@ public class EffectDamageView : EffectBaseView
 
         if (!string.IsNullOrEmpty(FxTarget))
         {
-            FxBase fb = FxPool.Instance.Alloc(FxTarget);
+            FxBase fb = FxPool.Instance.Alloc("Hit/" + FxTarget + "/" + FxTarget);
             fb.transform.localPosition = cv.transform.localPosition;
         }    
     }
 
-    BulletView CreateBullet(Creature target, string fx)
+    void CreateBullet()
     {
-        return CreateBullet(new Creature[1] { target }, fx);
+        switch (ToTarget)
+        {
+            case ToTargetType.Once:
+                PrepareTime = 0;
+                foreach (Creature crt in Effect.CurtTargets)
+                {
+                    CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(crt);
+                    BulletView bv = CreateBullet(crt);
+                    PrepareTime = Mathf.Max(PrepareTime, bv.FlyTime);
+                }
+                break;
+            case ToTargetType.Sequent:
+                {
+                    BulletView bv = CreateBullet(Effect.CurtTargets.ToArray());
+                    PrepareTime = bv.CurtFlyTime;
+                    bv.OnReachTarget = (blt, idx) => { NextTargetTime = blt.CurtFlyTime; };
+                }
+                break;
+            case ToTargetType.OneFirst:
+                {
+                    CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(Effect.CurtTargets[0]);
+                    CreateBullet(Effect.CurtTargets[0]);
+                }
+                break;
+        }
     }
-    BulletView CreateBullet(Creature[] targets, string fx)
+    BulletView CreateBullet(Creature target)
     {
-        FxBase fb = FxPool.Instance.Alloc(string.Format("Bullet/{0}/{1}", fx, fx));
-        BulletView bv = fb.gameObject.GetComponent<BulletView>();
-        bv.Active(Owner.Owner.transform.localPosition, targets);
+        return CreateBullet(new Creature[1] { target });
+    }
+    BulletView CreateBullet(Creature[] targets)
+    {
+        BulletView bv = BulletViewPool.Instance.Alloc(Bullet, Owner.Owner.transform.localPosition, targets);
         return bv;
     }
 }

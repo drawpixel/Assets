@@ -63,7 +63,11 @@ public class Creature
         get
         {
             Vector3 v = FGrid.Units[Index.Y, Index.X].Position;
-            v += new Vector3(((Proto.Dim.X - 1) / 2.0f) * FightGrid.UnitSize, ((Proto.Dim.Y - 1) / 2.0f) * FightGrid.UnitSize, 0);
+            Vector3 offset = new Vector3(((Proto.Dim.X - 1) / 2.0f) * FightGrid.UnitSize, ((Proto.Dim.Y - 1) / 2.0f) * FightGrid.UnitSize, 0);
+            if (FGrid.Dir == FightGrid.DirType.Up)
+                v += offset;
+            else
+                v += new Vector3(offset.x, -offset.y, 0);
             return v;
         }
     }
@@ -72,7 +76,11 @@ public class Creature
         get
         {
             Vector3 v = FGrid.Units[Index.Y, Index.X].Position;
-            v += new Vector3(((Proto.Dim.X - 1) / 2) * FightGrid.UnitSize, ((Proto.Dim.Y - 1) / 2) * FightGrid.UnitSize, 0);
+            Vector3 offset = new Vector3(((Proto.Dim.X - 1) / 2) * FightGrid.UnitSize, ((Proto.Dim.Y - 1) / 2) * FightGrid.UnitSize, 0);
+            if (FGrid.Dir == FightGrid.DirType.Up)
+                v += offset;
+            else
+                v += new Vector3(offset.x, -offset.y, 0);
             return v;
         }
     }
