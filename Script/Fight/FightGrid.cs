@@ -180,6 +180,18 @@ public class FightGrid
         crt.Index = new Int2D(-1, -1);
     }
 
+    Unit[,] SnapUnits()
+    {
+        Unit[,] ret = new Unit[UnitCount.Y, UnitCount.X];
+        for (int y = 0; y < Units.GetLength(0); ++y)
+        {
+            for (int x = 0; x < Units.GetLength(1); ++x)
+            {
+                ret[y, x] = new Unit(new Int2D(x, y), Units[y, x].Creature);
+            }
+        }
+        return ret;
+    }
     public bool CanBeReplace(Creature crt, Int2D dest)
     {
         Int2D orig;
@@ -223,6 +235,32 @@ public class FightGrid
                 for_checks.Add(new Int2D(x, y));
             }
         }
+        for (int x = dest_min.X; x < dest_max.X; ++x)
+        {
+            for (int y = dest_min.Y; y < dest_max.Y; ++y)
+            {
+                for_checks.Add(new Int2D(x - crt.Index.X, y - crt.Index.Y));
+            }
+        }
+
+
+        Unit[,] temp_unit = SnapUnits();
+        foreach (Unit u in temp_unit)
+        {
+            if (dest_crts.Contains(u.Creature) || u.Creature == crt)
+                u.Creature = null;
+        }
+        
+        for (int x = 0; x < crt.Proto.Dim.X; ++x)
+        {
+            for (int y = 0; y < crt.Proto.Dim.Y; ++y)
+            {
+                Int2D curt = dest + new Int2D(x, y);
+                if (curt.X >= FightGrid.UnitCount.X || curt.Y >= FightGrid.UnitCount.Y)
+                    return false;
+                temp_unit[curt.Y, curt.X].Creature = crt;
+            }
+        }
 
         for (int i = 0; i < for_checks.Count; ++i)
         {
@@ -251,8 +289,10 @@ public class FightGrid
                             can_fit = false;
                             break;
                         }
-                        FightGrid.Unit check = Units[check_pt.Y, check_pt.X];
-                        if (check.Creature == null || (check.Creature == crt && !will_occupied.Contains(check_pt)))
+                        FightGrid.Unit check = temp_unit[check_pt.Y, check_pt.X];
+                        //if (check.Creature == null || (check.Creature == crt && !will_occupied.Contains(check_pt)) ||
+                        //    dest_crts.Contains(check.Creature))
+                        if (check.Creature == null)
                         {
                             continue;
                         }
