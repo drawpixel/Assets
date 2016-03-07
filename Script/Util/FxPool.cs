@@ -37,16 +37,58 @@ public class FxPool : MonoBehaviour
             }
         }
     }
-	public FxBase Alloc(string key, GameObject parent = null)
-	{
-        if (!m_pool.ContainsKey (key)) 
+    public FxBase Alloc(string key, GameObject parent = null)
+    {
+        if (!m_pool.ContainsKey(key))
+        {
+            m_pool[key] = new List<FxBase>();
+        }
+
+        FxBase ret = null;
+
+        foreach (FxBase m in m_pool[key])
+        {
+            if (!m.ActiveInPool)
+            {
+                ret = m;
+                break;
+            }
+        }
+
+        if (ret == null)
+        {
+            FxBase new_m = ResMgr.Instance.CreateGameObject("Fx/" + key, null).GetComponent<FxBase>();
+            new_m.Create();
+            ret = new_m;
+            m_pool[key].Add(new_m);
+        }
+
+        ret.ActiveInPool = true;
+
+        if (parent != null)
+        {
+            ret.transform.SetParent(parent.transform);
+        }
+        else
+        {
+            ret.transform.SetParent(m_fx_root.transform);
+        }
+        ret.transform.localPosition = Vector3.zero;
+        ret.transform.localRotation = Quaternion.identity;
+        ret.transform.localScale = Vector3.one;
+
+        return ret;
+    }
+    public FxBase Alloc(GameObject prefab, GameObject parent = null)
+    {
+        if (!m_pool.ContainsKey (prefab.name)) 
 		{
-			m_pool[key] = new List<FxBase>();
+			m_pool[prefab.name] = new List<FxBase>();
 		}
 
 		FxBase ret = null;
 
-		foreach (FxBase m in m_pool[key]) 
+		foreach (FxBase m in m_pool[prefab.name]) 
 		{
 			if (!m.ActiveInPool)
 			{
@@ -57,10 +99,10 @@ public class FxPool : MonoBehaviour
 
 		if (ret == null) 
 		{
-            FxBase new_m = ResMgr.Instance.CreateGameObject("Fx/" + key, null).GetComponent<FxBase>();
+            FxBase new_m = Util.CreateGameObject(prefab, null).GetComponent<FxBase>();
 			new_m.Create ();
 			ret = new_m;
-            m_pool[key].Add(new_m);
+            m_pool[prefab.name].Add(new_m);
 		}
 
 		ret.ActiveInPool = true;

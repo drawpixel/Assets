@@ -17,7 +17,7 @@ public class EffectDamageLast : EffectBase
         m_proto_damage = proto as ProtoEffectDamageLast;
 	}
 
-    public override void Active()
+    public override void Active(int times = 0)
     {
         for (int i = 0; i < CurtTargets.Count; ++i)
         {

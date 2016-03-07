@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class EffectBase
 {
-    public delegate void DgtActive(EffectBase effect);
+    public delegate void DgtActive(EffectBase effect, int idx);
     public DgtActive OnActive;
 
     public delegate void DgtActivePrepare(EffectBase effect);
@@ -71,13 +71,16 @@ public class EffectBase
 
     public virtual void Active()
     {
-        for (int i = 0; i < CurtTargets.Count; ++i)
+        for (int t = 0; t < Proto.Times; ++ t)
         {
-            Creature crt = CurtTargets[i];
-            Active(crt);
+            for (int i = 0; i < CurtTargets.Count; ++i)
+            {
+                Creature crt = CurtTargets[i];
+                Active(crt, t);
+            }
         }
     }
-    public virtual void Active(Creature target)
+    public virtual void Active(Creature target, int idx_times = 0)
     {
         if (State != StateType.Active)
         {
@@ -85,7 +88,7 @@ public class EffectBase
 
             if (OnActive != null)
             {
-                OnActive(this);
+                OnActive(this, idx_times);
             }    
         }
     }

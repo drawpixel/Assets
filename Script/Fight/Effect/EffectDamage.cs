@@ -17,10 +17,10 @@ public class EffectDamage : EffectBase
         m_proto_damage = proto as ProtoEffectDamage;
 	}
 
-    public override void Active(Creature target)
+    public override void Active(Creature target, int times = 0)
     {
-        base.Active(target);
+        base.Active(target, times);
 
-        target.TakeDamage(OwnerSkill.OwnerCreature, Proto.Damage);
+        target.TakeDamage(OwnerSkill.OwnerCreature, Proto.Damage / (float)Proto.Times);
     }
 }

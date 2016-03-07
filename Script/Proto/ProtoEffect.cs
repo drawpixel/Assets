@@ -27,6 +27,7 @@ public enum EffectExcludeType
 
 public class ProtoEffect : ProtoBase
 {
+    public int Times = 1;
     public float Probability;
     public bool TargetGridFace = true;
     public EffectTargetSelect TargetSelect = EffectTargetSelect.Front;
@@ -42,7 +43,7 @@ public class ProtoEffect : ProtoBase
 public class ProtoEffectDamage : ProtoEffect
 {
     public float Damage;
-
+    
     public override EffectBase NewInstance()
     {
         return new EffectDamage();

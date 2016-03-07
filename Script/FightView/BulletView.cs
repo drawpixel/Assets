@@ -42,8 +42,9 @@ public class BulletView : MonoBehaviour
         get { return m_curt_fly_time; }
     }
 
-    public string FxFly;
-    
+    //public string FxFly;
+    public GameObject PrefabFxFly;
+    public GameObject PrefabFxEnd;
 
     float m_time_counter = 0;
     float m_totol_time_counter = 0;
@@ -113,9 +114,9 @@ public class BulletView : MonoBehaviour
         if (FlyMode == FlyModeType.Laser)
         {
             UpdateRotation(CurtEnd);
-            if (!string.IsNullOrEmpty(FxFly))
+            if (PrefabFxFly != null)
             {
-                m_fb = FxPool.Instance.Alloc(FxFly, null);
+                m_fb = FxPool.Instance.Alloc(PrefabFxFly, null);
                 m_fb.transform.localPosition = transform.localPosition;
                 m_fb.transform.localRotation = transform.localRotation;
                 m_fb.ScaleBody(Vector3.Distance(CurtStart, CurtEnd));
@@ -126,9 +127,9 @@ public class BulletView : MonoBehaviour
         {
             Vector3 curt = CalcPos(0.02f);
             UpdateRotation(curt);
-            if (!string.IsNullOrEmpty(FxFly))
+            if (PrefabFxFly != null)
             {
-                m_fb = FxPool.Instance.Alloc(FxFly, gameObject);
+                m_fb = FxPool.Instance.Alloc(PrefabFxFly, gameObject);
             }
             
         }
@@ -150,13 +151,22 @@ public class BulletView : MonoBehaviour
     {
         m_time_counter += Time.deltaTime;
         m_totol_time_counter += Time.deltaTime;
-
-        
+                
         if (FlyMode == FlyModeType.Linear)
         {
             Vector3 curt = CalcPos(m_time_counter);
             UpdateRotation(curt);
             transform.localPosition = curt;
+        }
+        
+        if (m_time_counter >= m_curt_fly_time)
+        {
+            if (PrefabFxEnd != null)
+            {
+                FxBase fb = FxPool.Instance.Alloc(PrefabFxEnd, null);
+                fb.transform.localPosition = CurtEnd;
+            }
+            
         }
 
         if (m_totol_time_counter >= FlyTime)
@@ -180,9 +190,9 @@ public class BulletView : MonoBehaviour
                     FxPool.Instance.Free(m_fb);
                     m_fb = null;
                 }
-                if (!string.IsNullOrEmpty(FxFly))
+                if (PrefabFxFly != null)
                 {
-                    m_fb = FxPool.Instance.Alloc(FxFly, null);
+                    m_fb = FxPool.Instance.Alloc(PrefabFxFly, null);
                     m_fb.transform.localPosition = CurtStart;
                     m_fb.transform.localRotation = transform.localRotation;
                     m_fb.ScaleBody(Vector3.Distance(CurtStart, CurtEnd));

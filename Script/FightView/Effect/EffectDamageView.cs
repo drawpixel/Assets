@@ -5,8 +5,10 @@ using UnityEngine;
 public class EffectDamageView : EffectBaseView
 {
     public string Bullet;
-    public string FxTarget;
-    
+    public float TimesInterval = 0.2f;
+    //public string FxTarget;
+    public GameObject PrefabFxTarget;
+
     EffectDamage m_effect_damage;
     public new EffectDamage Effect
     {
@@ -35,9 +37,9 @@ public class EffectDamageView : EffectBaseView
 
         CreatureView cv = Owner.Owner.FCtrllerView.GetCreatureView(target);
 
-        if (!string.IsNullOrEmpty(FxTarget))
+        if (PrefabFxTarget != null)
         {
-            FxBase fb = FxPool.Instance.Alloc("Hit/" + FxTarget + "/" + FxTarget);
+            FxBase fb = FxPool.Instance.Alloc(PrefabFxTarget);
             fb.transform.localPosition = cv.transform.localPosition;
         }    
     }

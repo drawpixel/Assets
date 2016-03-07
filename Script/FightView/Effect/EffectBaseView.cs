@@ -153,9 +153,9 @@ public class EffectBaseView : MonoBehaviour
     }
 
 
-    protected virtual void ActiveInternal(Creature target)
+    protected virtual void ActiveInternal(Creature target, int idx_times)
     {
-        Effect.Active(target);
+        Effect.Active(target, idx_times);
     }
     
 
@@ -168,7 +168,7 @@ public class EffectBaseView : MonoBehaviour
             effect.Block();
         }
     }
-    public void OnActive(EffectBase effect)
+    public void OnActive(EffectBase effect, int times)
     {
         Active();
 
