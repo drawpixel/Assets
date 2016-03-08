@@ -22,9 +22,9 @@ public class EffectDamageView : EffectBaseView
         m_effect_damage = effect as EffectDamage;
 	}
 
-    public override void Prepare()
+    public override void Ready()
     {
-        base.Prepare();
+        base.Ready();
 
         if (!string.IsNullOrEmpty(Bullet))
         {

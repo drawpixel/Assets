@@ -10,14 +10,14 @@ public class EffectDamageLast : EffectBase
         get { return m_proto_damage; }
     }
 
-    public override void Create(ProtoEffect proto, Skill skill = null)
+    public override void Create(ProtoEffect proto, Skill skill = null, int idx = 0)
 	{
-        base.Create(proto, skill);
+        base.Create(proto, skill, idx);
 
         m_proto_damage = proto as ProtoEffectDamageLast;
 	}
 
-    public override void Active(int times = 0)
+    public override void Active()
     {
         for (int i = 0; i < CurtTargets.Count; ++i)
         {

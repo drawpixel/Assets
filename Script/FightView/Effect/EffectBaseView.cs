@@ -5,21 +5,15 @@ using UnityEngine;
 public class EffectBaseView : MonoBehaviour
 {
     public float PrepareTime = 1;
+    public float PrepareMultiEffectIndex = 0;
+    public float ReadyTime = 1;
     public float LastTime = 1;
-
-    /*
-    public enum CastPositionType
-    {
-        CasterCenter,
-        AlignTarget,
-    }
-    public CastPositionType CastPosition = CastPositionType.CasterCenter;
-    */
 
     public enum StateType
     {
         Init,
         Prepare,
+        Ready,
         Active,
         Over,
     }
@@ -89,6 +83,14 @@ public class EffectBaseView : MonoBehaviour
         switch (m_state)
         {
             case StateType.Prepare:
+                {
+                    if (m_state_counter >= PrepareMultiEffectIndex * Effect.IndexInOwner)
+                    {
+                        Ready();
+                    }
+                }
+                break;
+            case StateType.Ready:
                 if (m_state_counter >= PrepareTime)
                 {
                     switch (ToTarget)
@@ -141,6 +143,11 @@ public class EffectBaseView : MonoBehaviour
         m_target_idx = 0;
         m_target_counter = 0;
     }
+    public virtual void Ready()
+    {
+        m_state_counter = 0;
+        m_state = StateType.Ready;
+    }
     public virtual void Active()
     {
         m_state_counter = 0;
@@ -153,9 +160,9 @@ public class EffectBaseView : MonoBehaviour
     }
 
 
-    protected virtual void ActiveInternal(Creature target, int idx_times)
+    protected virtual void ActiveInternal(Creature target)
     {
-        Effect.Active(target, idx_times);
+        Effect.Active(target);
     }
     
 
@@ -163,19 +170,13 @@ public class EffectBaseView : MonoBehaviour
     {
         Prepare();
 
-        //if (PrepareTime > 0)
-        {
-            effect.Block();
-        }
+        effect.Block();
     }
     public void OnActive(EffectBase effect, int times)
     {
         Active();
 
-        //if (LastTime > 0)
-        {
-            effect.Block();
-        }
+        effect.Block();
     }
     public void OnActiveOver(EffectBase effect)
     {

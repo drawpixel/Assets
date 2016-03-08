@@ -60,7 +60,7 @@ public class Skill
         {
             ProtoEffect proto = Proto.ProtoEffects[i];
             EffectBase eb = proto.NewInstance(); 
-            eb.Create(proto, this);
+            eb.Create(proto, this, i);
             eb.OnActiveOver += OnEffectActiveOver;
             m_effects[i] = eb;
         }

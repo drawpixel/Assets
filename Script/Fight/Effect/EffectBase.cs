@@ -46,10 +46,17 @@ public class EffectBase
         get { return m_targets; }
     }
 
-    public virtual void Create(ProtoEffect proto, Skill skill)
+    int m_idx_in_owner = 0;
+    public int IndexInOwner
+    {
+        get { return m_idx_in_owner; }
+    }
+
+    public virtual void Create(ProtoEffect proto, Skill skill, int idx)
 	{
         m_proto = proto;
         m_owner_skill = skill;
+        m_idx_in_owner = idx;
 	}
 
     public virtual void Idle()

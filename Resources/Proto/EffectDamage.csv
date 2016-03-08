@@ -1,4 +1,5 @@
-ID,Key,TargetSelect,Damage,FxTarget
-101001,Atk01,Front,100,FxHit01
-101002,Atk02,FrontH,600,FxHit01
-101003,Atk03,FrontV,200,FxHit01
+ID,Key,TargetSelect,Damage,
+101001,Atk01,Front,100,
+101002,Atk02,FrontH,600,
+101003,Atk03,FrontV,200,
+101004,ArrowMulti01,Front,100,
